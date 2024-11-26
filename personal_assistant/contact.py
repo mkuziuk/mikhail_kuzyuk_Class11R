@@ -28,6 +28,10 @@ class ContactService:
         """Добавление нового контакта."""
         self.contacts.append(contact)
 
+    def get_all_contacts(self) -> List[Contact]:
+        """Получение всех контактов."""
+        return self.contacts
+
     def find_contact(self, search_term: str) -> List[Contact]:
         """Поиск контакта по имени или номеру телефона."""
         return [
@@ -120,7 +124,7 @@ class ContactController:
                 """
 1. Добавить контакт
 2. Просмотреть все контакты
-3. Найти контакт по ID
+3. Найти контакт по имени или телефону
 4. Редактировать контакт
 5. Удалить контакт
 6. Экспортировать контакты в CSV
@@ -136,7 +140,7 @@ class ContactController:
                 phone = input("Телефон: ")
                 email = input("Электронная почта: ")
 
-                contact = Contact(name, phone, email)
+                contact = Contact(name=name, phone=phone, email=email)
                 self.contact_service.add_contact(contact)
                 print("Контакт добавлен.")
 
@@ -152,42 +156,71 @@ class ContactController:
                         )
 
             elif choice == "3":
-                contact_id = input("Введите ID контакта: ")
-                contact = self.contact_service.get_contact_by_id(uuid.UUID(contact_id))
-                if contact:
-                    print(
-                        f"Контакт найден: Имя: {contact.name}, Телефон: {contact.phone}, "
-                        f"Электронная почта: {contact.email}"
-                    )
+                search_term = input("Введите имя или телефон для поиска: ")
+                found_contacts = self.contact_service.find_contact(search_term)
+                if not found_contacts:
+                    print("Контакты не найдены.")
                 else:
-                    print("Контакт не найден.")
+                    for contact in found_contacts:
+                        print(
+                            f"ID: {contact.id}, Имя: {contact.name}, Телефон: {contact.phone}, "
+                            f"Электронная почта: {contact.email}"
+                        )
 
             elif choice == "4":
-                contact_id = input("Введите ID контакта для редактирования: ")
-                contact = self.contact_service.get_contact_by_id(uuid.UUID(contact_id))
+                search_term = input(
+                    "Введите имя или телефон контакта для редактирования: "
+                )
+                found_contacts = self.contact_service.find_contact(search_term)
 
-                if not contact:
-                    print("Контакт не найден.")
+                if not found_contacts:
+                    print("Контакты не найдены.")
                     continue
 
-                name = input(f"Новое имя (текущее: {contact.name}): ") or contact.name
+                # Если найдено несколько контактов, показываем их и даем возможность выбрать
+                if len(found_contacts) > 1:
+                    print("Найдено несколько контактов:")
+                    for i, contact in enumerate(found_contacts):
+                        print(
+                            f"{i + 1}. ID: {contact.id}, Имя: {contact.name}, Телефон: {contact.phone}, "
+                            f"Электронная почта: {contact.email}"
+                        )
+                    index = (
+                        int(
+                            input(
+                                "Выберите номер контакта для редактирования (введите номер): "
+                            )
+                        )
+                        - 1
+                    )
+                    contact_to_edit = found_contacts[index]
+                else:
+                    contact_to_edit = found_contacts[0]
+
+                name = (
+                    input(f"Новое имя (текущее: {contact_to_edit.name}): ")
+                    or contact_to_edit.name
+                )
                 phone = (
-                    input(f"Новый телефон (текущий: {contact.phone}): ")
-                    or contact.phone
+                    input(f"Новый телефон (текущий: {contact_to_edit.phone}): ")
+                    or contact_to_edit.phone
                 )
                 email = (
-                    input(f"Новая электронная почта (текущая: {contact.email}): ")
-                    or contact.email
+                    input(
+                        f"Новая электронная почта (текущая: {contact_to_edit.email}): "
+                    )
+                    or contact_to_edit.email
                 )
 
-                new_contact = Contact(name, phone, email)
-                self.contact_service.replace_contact_by_id(contact.id, new_contact)
+                self.contact_service.edit_contact(
+                    str(contact_to_edit.id), name, phone, email
+                )
                 print("Контакт обновлен.")
 
             elif choice == "5":
                 contact_id = input("Введите ID контакта для удаления: ")
 
-                if self.contact_service.delete_contact_by_id(uuid.UUID(contact_id)):
+                if self.contact_service.delete_contact(contact_id):
                     print("Контакт удален.")
                 else:
                     print("Контакт не найден.")

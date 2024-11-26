@@ -2,9 +2,7 @@ from note import NoteService, NoteController
 from task import TaskService, TaskController
 from contact import ContactController, ContactService
 from finance_record import FinanceController, FinanceService
-
-# from finance_record import FinanceController
-# from contact import ContactController
+from calculator import calculate
 
 note_service = NoteService()
 note_controller = NoteController(note_service)
@@ -49,7 +47,9 @@ def handle_choice_main():
         elif choice == "4":
             finance_controller.handle_choice()
         elif choice == "5":
-            pass
+            expression = input("Введите арифметическое выражение: ")
+            result = calculate(expression)
+            print("Результат:", result)
         elif choice == "6":
             exit_program()
             break

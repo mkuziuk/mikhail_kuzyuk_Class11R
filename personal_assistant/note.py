@@ -212,7 +212,7 @@ class NoteController:
                     or "notes.json"
                 )
 
-                self.note_service.save_to_json(file_name)
+                self.note_service.export_as_json(file_name)
                 print(f"Заметки сохранены в файл {file_name}.")
 
             elif choice == "9":
@@ -221,7 +221,7 @@ class NoteController:
                     or "notes.json"
                 )
 
-                self.note_service.load_from_json(file_name)
+                self.note_service.import_json(file_name)
                 print(f"Заметки загружены из файла {file_name}.")
 
             elif choice == "0":

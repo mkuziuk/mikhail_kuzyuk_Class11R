@@ -91,7 +91,7 @@ class TaskService:
                 )
                 self.add_task(task)
 
-    def save_to_json(self, filename: str) -> None:
+    def export_as_json(self, filename: str) -> None:
         """Save tasks to a JSON file."""
         with open(filename, mode="w", encoding="utf-8") as file:
             json.dump(
@@ -100,6 +100,19 @@ class TaskService:
                 ensure_ascii=False,
                 indent=4,
             )
+
+    def import_json(self, filename: str) -> None:
+        with open(filename, mode="r", encoding="utf-8") as file:
+            tasks_data = json.load(file)
+            for data in tasks_data:
+                task = Task(
+                    title=data["title"],
+                    description=data["description"],
+                    done=data["done"],
+                    priority=data["priority"],
+                    due_date=data["due_date"],
+                )
+                self.add_task(task)
 
 
 class TaskController:
@@ -215,7 +228,7 @@ class TaskController:
                     or "tasks.json"
                 )
 
-                self.task_service.save_to_json(file_name)
+                self.task_service.export_as_json(file_name)
                 print(f"Задачи сохранены в файл {file_name}.")
 
             elif choice == "9":
@@ -224,7 +237,7 @@ class TaskController:
                     or "tasks.json"
                 )
 
-                self.task_service.load_from_json(file_name)
+                self.task_service.import_json(file_name)
                 print(f"Задачи загружены из файла {file_name}.")
 
             elif choice == "0":
